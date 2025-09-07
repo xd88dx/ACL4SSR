@@ -1,9 +1,9 @@
 name: Fetch Modify Config
 
 on:
-  schedule:
-    - cron: '0 13 * * *' # UTC 时间 13:00 对应北京时间 21:00
   workflow_dispatch: # 允许手动触发
+  schedule:
+    - cron: '0 13 * * *' # UTC -> UTC+8
 
 jobs:
   update-config:
@@ -28,9 +28,8 @@ jobs:
                 -e 's|`\\[\\]☑️ 手动切换||g' \
                 ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_all.ini
 
-
-      - name: Commit and push changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ACL4SSR_Online_MultiCountry_all.ini
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update ACL4SSR_Online_MultiCountry_all.ini (daily sync)"
+          file_pattern: "ACL4SSR_Online_MultiCountry_all.ini"
