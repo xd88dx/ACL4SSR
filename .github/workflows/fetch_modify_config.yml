@@ -26,7 +26,7 @@ jobs:
               -e 's|`\[\]🇭🇰 香港节点||g' \
               -e 's|`\[\]🇺🇲 美国节点||g' \
               -e 's|`\[\]☑️ 手动切换|`.*|g' \
-              ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_all.ini
+              ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_full.ini
 
       - name: Process mini ini file
         run: |
