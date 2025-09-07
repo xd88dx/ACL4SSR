@@ -1,9 +1,9 @@
-name: Fetch and Modify Config
+name: Fetch Modify Config
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "0 3 * * *" # 每天 03:00 自动运行
+    - cron: '0 13 * * *' # UTC 时间 13:00 对应北京时间 21:00
+  workflow_dispatch: # 允许手动触发
 
 jobs:
   update-config:
@@ -19,19 +19,18 @@ jobs:
 
       - name: Process ini file
         run: |
-          sed -e '/custom_proxy_group=🇭🇰 香港节点/d' \
-              -e '/custom_proxy_group=🇯🇵 日本节点/d' \
-              -e '/custom_proxy_group=🇺🇲 美国节点/d' \
-              -e '/custom_proxy_group=☑️ 手动切换/d' \
-              -e 's/`\[[]🇭🇰 香港节点/[]/g' \
-              -e 's/`\[[]🇺🇲 美国节点/[]/g' \
-              -e 's/`\[[]☑️ 手动切换/[]/g' \
-              ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_all.ini
+            sed -e '/custom_proxy_group=🇭🇰 香港节点/d' \
+                -e '/custom_proxy_group=🇯🇵 日本节点/d' \
+                -e '/custom_proxy_group=🇺🇲 美国节点/d' \
+                -e '/custom_proxy_group=☑️ 手动切换/d' \
+                -e 's|`\\[\\]🇭🇰 香港节点||g' \
+                -e 's|`\\[\\]🇺🇲 美国节点||g' \
+                -e 's|`\\[\\]☑️ 手动切换||g' \
+                ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_all.ini
+
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add ACL4SSR_Online_MultiCountry_all.ini
-          git commit -m "chore: update ACL4SSR_Online_MultiCountry_all.ini" || echo "No changes to commit"
-          git push
