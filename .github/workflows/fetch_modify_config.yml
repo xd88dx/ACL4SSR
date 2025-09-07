@@ -1,9 +1,9 @@
-name: Fetch Modify Config
+name: Fetch and Modify Config
 
 on:
   schedule:
-    - cron: '0 13 * * *' # UTC 时间 13:00 对应北京时间 21:00
-  workflow_dispatch: # 允许手动触发
+    - cron: '0 13 * * *'  # UTC 时间 13:00 对应北京时间 21:00
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   process-config:
@@ -11,39 +11,43 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true  # 保留凭据以允许推送
 
       - name: Fetch and modify config file
         run: |
           # 定义源文件 URL 和目标文件路径
           SOURCE_URL="https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini"
           DEST_FILE="ACL4SSR_Online_MultiCountry_all.ini"
-
+          
           # 从 URL 下载文件内容
           echo "Fetching config from $SOURCE_URL..."
           if ! curl -sSL "$SOURCE_URL" -o "$DEST_FILE.tmp"; then
             echo "Error: Failed to fetch config file"
             exit 1
           fi
-
-          # 删除包含指定代理组的行
+          
+          # 删除包含指定代理组的行，使用双引号确保特殊字符正确处理
           echo "Modifying config file..."
-          sed -i '/custom_proxy_group=☑️ 手动切换/d' "$DEST_FILE.tmp"
-          sed -i '/custom_proxy_group=🇭🇰 香港节点/d' "$DEST_FILE.tmp"
-          sed -i '/custom_proxy_group=🇯🇵 日本节点/d' "$DEST_FILE.tmp"
-          sed -i '/custom_proxy_group=🇺🇲 美国节点/d' "$DEST_FILE.tmp"
-
+          # 删除国家节点行
+          sed -i "/custom_proxy_group=🇭🇰 香港节点/d" "$DEST_FILE.tmp"
+          sed -i "/custom_proxy_group=🇯🇵 日本节点/d" "$DEST_FILE.tmp"
+          sed -i "/custom_proxy_group=🇺🇲 美国节点'/d" "$DEST_FILE.tmp"  # 修正：包含单引号
+          # 删除手动切换行
+          sed -i "/custom_proxy_group=☑️ 手动切换/d" "$DEST_FILE.tmp"
+          
           # 删除文件中所有出现的特定标记
-          sed -i 's/\[]☑️ 手动切换//g' "$DEST_FILE.tmp"
-          sed -i 's/\[]🇭🇰 香港节点//g' "$DEST_FILE.tmp"
-          sed -i 's/\[]🇺🇲 美国节点//g' "$DEST_FILE.tmp"
-
+          sed -i "s/\[]🇭🇰 香港节点`//g" "$DEST_FILE.tmp"
+          sed -i "s/\[]🇺🇲 美国节点`//g" "$DEST_FILE.tmp"  # 修正：包含单引号
+          sed -i "s/\[]☑️ 手动切换`//g" "$DEST_FILE.tmp"
+          
           # 移动处理后的文件到目标路径
           mv "$DEST_FILE.tmp" "$DEST_FILE"
-
+          
           echo "File processed successfully"
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'Update ACL4SSR_Online_MultiCountry_all.ini (daily sync)'
-          file_pattern: 'ACL4SSR_Online_MultiCountry_all.ini'
+          commit_message: "Update ACL4SSR_Online_MultiCountry_all.ini (daily sync)"
+          file_pattern: "ACL4SSR_Online_MultiCountry_all.ini"
