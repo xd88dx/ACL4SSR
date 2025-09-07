@@ -26,7 +26,9 @@ jobs:
               -e 's|`\[\]🇭🇰 香港节点||g' \
               -e 's|`\[\]🇺🇲 美国节点||g' \
               -e 's|`\[\]☑️ 手动切换||g' \
-              ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_all.ini
+              ACL4SSR_Online_MultiCountry.ini \
+          | sed '/custom_proxy_group=🚀 节点选择/ s/`\[\]DIRECT/`.*`\[\]DIRECT/' \
+          > ACL4SSR_Online_MultiCountry_all.ini
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
