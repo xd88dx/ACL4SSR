@@ -1,4 +1,4 @@
-name: Fetch Modify Config
+name: Fetch Modify Config Manually
 
 on:
   workflow_dispatch: # 允许手动触发
