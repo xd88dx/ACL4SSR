@@ -1,0 +1,41 @@
+--- rename_origin.js	2025-09-08 19:23:08.108333100 +0800
++++ rename_local.js	2025-09-08 19:09:36.158598100 +0800
+@@ -56,6 +56,8 @@
+ 
+ const FGF = inArg.fgf == undefined ? " " : decodeURI(inArg.fgf),
+   XHFGF = inArg.sn == undefined ? " " : decodeURI(inArg.sn),
++  keepSpeed = inArg.speed == undefined ? "" : decodeURI(inArg.speed),
++  appendStr = inArg.append == undefined ? "" : decodeURI(inArg.append),
+   FNAME = inArg.name == undefined ? "" : decodeURI(inArg.name),
+   BLKEY = inArg.blkey == undefined ? "" : decodeURI(inArg.blkey),
+   blockquic = inArg.blockquic == undefined ? "" : decodeURI(inArg.blockquic),
+@@ -171,6 +173,10 @@
+ 
+   pro.forEach((e) => {
+     let bktf = false, ens = e.name
++
++    const speedMatch = keepSpeed ? e.name.match(/(\d+(\.\d+)?\s?(KB|MB|GB)\/s)/i) : null;
++    const speed = speedMatch ? speedMatch[1] : null;
++
+     // 预处理 防止预判或遗漏
+     Object.keys(rurekey).forEach((ikey) => {
+       if (rurekey[ikey].test(e.name)) {
+@@ -277,10 +283,17 @@
+       keyover = keyover
+         .concat(firstName, usflag, nNames, findKeyValue, retainKey, ikey, ikeys)
+         .filter((k) => k !== "");
++      if (keepSpeed && speed) keyover.splice(1, 0, speed);
++      if (appendStr) keyover.push(appendStr);
+       e.name = keyover.join(FGF);
+     } else {
+       if (nm) {
+-        e.name = FNAME + FGF + e.name;
++        const otherName = "Other";
++        let keyover = [FNAME, otherName].filter((k) => k !== "");
++        if (keepSpeed && speed) keyover.splice(1, 0, speed);
++        if (retainKey) keyover.push(retainKey);
++        if (appendStr) keyover.push(appendStr);
++        e.name = keyover.join(FGF);
+       } else {
+         e.name = null;
+       }

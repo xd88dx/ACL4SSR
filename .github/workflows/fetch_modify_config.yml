@@ -3,42 +3,44 @@ name: Fetch Modify Config
 on:
   workflow_dispatch: # 允许手动触发
   schedule:
-    - cron: '0 13 * * *' # UTC -> UTC+8
+    - cron: '0 13 * * *' # 允许定时触发 UTC -> UTC+8
 
 jobs:
-  update-config:
+  update:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download remote ini
+      - name: Install patch & dos2unix
         run: |
-          curl -sL https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini -o ACL4SSR_Online_MultiCountry.ini
+          sudo apt-get update
+          sudo apt-get install -y patch dos2unix
 
-      - name: Process all ini file
+      - name: Download ACL4SSR config (full)
         run: |
-          sed -e '/custom_proxy_group=🇭🇰 香港节点/d' \
-              -e '/custom_proxy_group=🇯🇵 日本节点/d' \
-              -e '/custom_proxy_group=🇺🇲 美国节点/d' \
-              -e '/custom_proxy_group=☑️ 手动切换/d' \
-              -e 's|`\[\]🇭🇰 香港节点||g' \
-              -e 's|`\[\]🇺🇲 美国节点||g' \
-              -e 's|`\[\]☑️ 手动切换|`.*|g' \
-              ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_full.ini
+          curl -sL https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini -o ACL4SSR_Online_MultiCountry.remote.ini
+          dos2unix ACL4SSR_Online_MultiCountry.remote.ini
+          cp ACL4SSR_Online_MultiCountry.remote.ini ACL4SSR_Online_MultiCountry_full.ini
+          patch ACL4SSR_Online_MultiCountry_full.ini diff/patch_acl4ssr_full.diff
 
-      - name: Process mini ini file
+      - name: Download ACL4SSR config (mini)
         run: |
-          sed -e '/custom_proxy_group=🇭🇰 香港节点/d' \
-              -e '/custom_proxy_group=🇯🇵 日本节点/d' \
-              -e '/custom_proxy_group=🇺🇲 美国节点/d' \
-              -e 's|`\[\]🇭🇰 香港节点||g' \
-              -e 's|`\[\]🇺🇲 美国节点||g' \
-              ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_mini.ini
+          curl -sL https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini -o ACL4SSR_Online_MultiCountry.remote.ini
+          dos2unix ACL4SSR_Online_MultiCountry.remote.ini
+          cp ACL4SSR_Online_MultiCountry.remote.ini ACL4SSR_Online_MultiCountry_mini.ini
+          patch ACL4SSR_Online_MultiCountry_mini.ini diff/patch_acl4ssr_mini.diff
+
+      - name: Download rename.js
+        run: |
+          curl -sL https://raw.githubusercontent.com/Keywos/rule/main/rename.js -o rename.remote.js
+          dos2unix rename.remote.js
+          cp rename.remote.js rename.js
+          patch rename.js diff/patch_rename.diff
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'Update ACL4SSR Config'
-          file_pattern: 'ACL4SSR_Online_MultiCountry_*.ini'
+          commit_message: 'Update Sub Config'
+          file_pattern: 'ACL4SSR_Online_MultiCountry_*.ini rename.js'

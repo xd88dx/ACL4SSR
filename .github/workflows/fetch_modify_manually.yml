@@ -1,0 +1,42 @@
+name: Fetch Modify Config
+
+on:
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  update-config:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download remote ini
+        run: |
+          curl -sL https://raw.githubusercontent.com/cmliu/ACL4SSR/main/Clash/config/ACL4SSR_Online_MultiCountry.ini -o ACL4SSR_Online_MultiCountry.ini
+
+      - name: Process all ini file
+        run: |
+          sed -e '/custom_proxy_group=🇭🇰 香港节点/d' \
+              -e '/custom_proxy_group=🇯🇵 日本节点/d' \
+              -e '/custom_proxy_group=🇺🇲 美国节点/d' \
+              -e '/custom_proxy_group=☑️ 手动切换/d' \
+              -e 's|`\[\]🇭🇰 香港节点||g' \
+              -e 's|`\[\]🇺🇲 美国节点||g' \
+              -e 's|`\[\]☑️ 手动切换|`.*|g' \
+              ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_full.ini
+
+      - name: Process mini ini file
+        run: |
+          sed -e '/custom_proxy_group=🇭🇰 香港节点/d' \
+              -e '/custom_proxy_group=🇯🇵 日本节点/d' \
+              -e '/custom_proxy_group=🇺🇲 美国节点/d' \
+              -e 's|`\[\]🇭🇰 香港节点||g' \
+              -e 's|`\[\]🇺🇲 美国节点||g' \
+              ACL4SSR_Online_MultiCountry.ini > ACL4SSR_Online_MultiCountry_mini.ini
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'Update ACL4SSR Config'
+          file_pattern: 'ACL4SSR_Online_MultiCountry_*.ini'
