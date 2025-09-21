@@ -22,10 +22,10 @@ cloud_exists=1
 
 case "$check_type" in
 sb)
-  [[ $sing_exists -eq 0 ]] && log "singbox 正在运行, 退出..." && exit 0
+  [[ $sing_exists -eq 0 ]] && echo "singbox 正在运行, 退出..." && exit 0
   ;;
 all)
-  [[ $sing_exists -eq 0 && $cloud_exists -eq 0 ]] && log "agsbx 正在运行, 退出..." && exit 0
+  [[ $sing_exists -eq 0 && $cloud_exists -eq 0 ]] && echo "agsbx 正在运行, 退出..." && exit 0
   ;;
 esac
 
