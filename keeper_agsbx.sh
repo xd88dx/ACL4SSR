@@ -21,8 +21,8 @@ run_res() {
 }
 
 # 校验参数
-if [[ ! "$check_type" =~ ^(sb|all|keep)$ ]]; then
-  log "无效参数: $check_type，只支持 sb、all、keep"
+if [[ ! "$check_type" =~ ^(sb|all|keep|sc)$ ]]; then
+  log "无效参数: $check_type，只支持 sb、sc、all、keep"
   exit 1
 fi
 
@@ -34,16 +34,19 @@ sb_exists=1
 xray_exists=1
 tunnel_exists=1
 
-[[ "$check_type" =~ ^(sb|all)$ ]] && ps aux | grep -q "[a]gsbx/sing" && sb_exists=0
+[[ "$check_type" =~ ^(all|sb|sc)$ ]] && ps aux | grep -q "[a]gsbx/sing" && sb_exists=0
 [[ "$check_type" == "all" ]] && ps aux | grep -q "[a]gsbx/xray" && xray_exists=0
-[[ "$check_type" == "all" ]] && ps aux | grep -q "[a]gsbx/cloud" && tunnel_exists=0
+[[ "$check_type" =~ ^(all|sc)$ ]] && ps aux | grep -q "[a]gsbx/cloud" && tunnel_exists=0
 
 case "$check_type" in
 sb)
   [[ $sb_exists -eq 0 ]] && echo "singbox 正在运行, 退出..." && exit 0
   ;;
+sc)
+  [[ $sb_exists -eq 0 && $tunnel_exists -eq 0 ]] && echo "singbox 和 tunnel 正在运行, 退出..." && exit 0
+  ;;
 all)
-  [[ $sb_exists -eq 0 && $xray_exists -eq 0 && $tunnel_exists -eq 0 ]] && echo "agsbx 正在运行, 退出..." && exit 0
+  [[ $sb_exists -eq 0 && $tunnel_exists -eq 0 && $xray_exists -eq 0 ]] && echo "agsbx 正在运行, 退出..." && exit 0
   ;;
 esac
 
