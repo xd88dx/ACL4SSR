@@ -30,18 +30,20 @@ fi
 [[ "$check_type" == "keep" ]] && run_res "每日重启" && exit 0
 
 # 进程检测
-sing_exists=1
-cloud_exists=1
+sb_exists=1
+xray_exists=1
+tunnel_exists=1
 
-[[ "$check_type" =~ ^(sb|all)$ ]] && ps aux | grep -q "[a]gsbx/sing" && sing_exists=0
-[[ "$check_type" == "all" ]] && ps aux | grep -q "[a]gsbx/cloud" && cloud_exists=0
+[[ "$check_type" =~ ^(sb|all)$ ]] && ps aux | grep -q "[a]gsbx/sing" && sb_exists=0
+[[ "$check_type" == "all" ]] && ps aux | grep -q "[a]gsbx/xray" && xray_exists=0
+[[ "$check_type" == "all" ]] && ps aux | grep -q "[a]gsbx/cloud" && tunnel_exists=0
 
 case "$check_type" in
 sb)
-  [[ $sing_exists -eq 0 ]] && echo "singbox 正在运行, 退出..." && exit 0
+  [[ $sb_exists -eq 0 ]] && echo "singbox 正在运行, 退出..." && exit 0
   ;;
 all)
-  [[ $sing_exists -eq 0 && $cloud_exists -eq 0 ]] && echo "agsbx 正在运行, 退出..." && exit 0
+  [[ $sb_exists -eq 0 && $xray_exists -eq 0 && $tunnel_exists -eq 0 ]] && echo "agsbx 正在运行, 退出..." && exit 0
   ;;
 esac
 
